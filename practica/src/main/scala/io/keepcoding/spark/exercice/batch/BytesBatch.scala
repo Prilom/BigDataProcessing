@@ -87,11 +87,10 @@ object BytesBatch extends BatchJob{
     val jdbcMetadataTable = "user_metadata"
     val jdbcHourlyGroupTable = "bytes_hourly"
     val jdbcQuoteTable = "user_quota_limit"
-    val filterDate = "2022-10-26T16:00:00Z"
+    val filterDate = "2022-10-29T17:00:00Z"
     val UserColumn = "id"
     val appColumn = "app"
     val antennaColumn = "antenna_id"
-
 
     val deviceDF = readFromStorage(storagePath, OffsetDateTime.parse(filterDate))
     val metadataDF = readUserMetadata(jdbcURI, jdbcMetadataTable, user, password)
@@ -109,3 +108,4 @@ object BytesBatch extends BatchJob{
   }
 
 }
+

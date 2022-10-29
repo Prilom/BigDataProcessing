@@ -24,7 +24,7 @@ trait StreamingJob {
 
   def writeToStorage(dataFrame: DataFrame, storageRootPath: String): Future[Unit]
 
-def run(args: Array[String]): Unit = {
+  def run(args: Array[String]): Unit = {
     val Array(kafkaServer, topic,  jdbcURI,user,password, storageRootPath,jdbcTableBytes,groupByUser,groupByApp,groupByAntenna) = args
         println(s"Running with: ${args.toSeq}")
 

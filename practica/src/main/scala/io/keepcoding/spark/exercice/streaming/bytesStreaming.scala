@@ -1,7 +1,7 @@
 package io.keepcoding.spark.exercice.streaming
 import io.keepcoding.spark.exercise.streaming.{AntennaMessage, StreamingJob}
 import org.apache.spark.sql.catalyst.ScalaReflection
-import org.apache.spark.sql.functions.{col, dayofmonth, from_json, hour, lit, month, sum, when, window, year}
+import org.apache.spark.sql.functions.{col, dayofmonth, from_json, hour, lit, month, sum,  window, year}
 import org.apache.spark.sql.types.{StringType, StructType, TimestampType}
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 
@@ -17,7 +17,7 @@ object bytesStreaming extends StreamingJob{
     .appName("Práctica Final")
     .getOrCreate()
 
-  override def readFromKafka(kafkaServer: String, topic: String): DataFrame = {
+  override def readFromKafka(kafkaServer: String, topic: String): DataFrame= {
     spark
       .readStream
       .format("kafka")
@@ -43,8 +43,8 @@ object bytesStreaming extends StreamingJob{
 
     dataFrame
       .select($"timestamp",col(device),$"bytes")
-      .withWatermark("timestamp", "1 seconds")
-      .groupBy(col(device), window($"timestamp", "5 seconds"))
+      .withWatermark("timestamp", "1 minutes")
+      .groupBy(col(device), window($"timestamp", "5 minutes"))
       .agg(
         sum($"bytes").as("value")
       )
@@ -54,7 +54,7 @@ object bytesStreaming extends StreamingJob{
  override def writeToJdbc(dataFrame: DataFrame, jdbcURI: String, jdbcTable: String, user: String, password: String): Future[Unit] = Future {
    dataFrame
      .writeStream
-     .foreachBatch { (data: DataFrame, batchId: Long) =>
+     .foreachBatch { (data: DataFrame,BatchId:Long) =>
        data
          .write
          .mode(SaveMode.Append)
@@ -89,47 +89,42 @@ object bytesStreaming extends StreamingJob{
       .awaitTermination()
     }
 
-  val kafkaServer = "34.125.96.67:9092"
-  val topic = "devices"
-  val jdbcURI = s"jdbc:postgresql://35.192.37.9:5432/postgres"
-  val user = "postgres"
-  val password = "keepcoding"
-  //Rutas almacenamiento
-  val storageRootPath = """C:\\Users\\prilo\\OneDrive\\Desktop\\KeepCoding\\BootCamp\\practicas\\BigData-Processing\\practica\\src\\main\\resources\\storage"""
-  //tables
-  val jdbcTableBytes = "bytes"
-  //Groupby
-  val groupByUser = "id"
-  val groupByApp = "app"
-  val groupByAntenna = "antenna_id"
 
-  def main(args: Array[String]): Unit = run(kafkaServer, topic,  jdbcURI,user,password, storageRootPath,jdbcTableBytes,groupByUser,groupByApp,groupByAntenna)
-
-  /*def main(args: Array[String]): Unit = {
-    //Datos servidores
+ def main(args: Array[String]): Unit = {
+   //Datos servidores
+   val kafkaServer = "34.76.100.193:9092"
+   val topic = "devices"
+   val jdbcURI = s"jdbc:postgresql://35.192.37.9:5432/postgres"
+   val user = "postgres"
+   val password = "keepcoding"
+   //Rutas almacenamiento
+   val storageRootPath = """C:\\Users\\prilo\\OneDrive\\Desktop\\KeepCoding\\BootCamp\\practicas\\BigData-Processing\\practica\\src\\main\\resources\\storage"""
+   //tables
+   val jdbcTableBytes = "bytes"
+   //Groupby
+   val groupByUser = "id"
+   val groupByApp = "app"
+   val groupByAntenna = "antenna_id"
 
 
+   val kafkaDF = readFromKafka(kafkaServer, topic)
+   val parseDF = parserJsonData(kafkaDF)
+   val storageFurure = writeToStorage(parseDF, storageRootPath)
+   val countUserDF = computeDevicesCountBy(parseDF, groupByUser)
+   val countAppDF = computeDevicesCountBy(parseDF, groupByApp)
+   val countAntennaDF = computeDevicesCountBy(parseDF, groupByAntenna)
+
+   //Realizamos la carga de los DF en postgres
+   val jdbcUserFuture = writeToJdbc(countUserDF, jdbcURI, jdbcTableBytes, user, password)
+   val jdbcAppFuture = writeToJdbc(countAppDF, jdbcURI, jdbcTableBytes, user, password)
+   val jdbcAntennaFuture = writeToJdbc(countAntennaDF, jdbcURI, jdbcTableBytes, user, password)
 
 
+   Await.result(
+     Future.sequence(Seq(storageFurure, jdbcUserFuture, jdbcAppFuture, jdbcAntennaFuture)), Duration.Inf) //
 
-    val kafkaDF = readFromKafka(kafkaServer, topic)
-    val parseDF = parserJsonData(kafkaDF)
-    val storageFurure = writeToStorage(parseDF,storageRootPath)
-    val countUserDF = computeDevicesCountBy(parseDF, groupByUser)
-    val countAppDF = computeDevicesCountBy(parseDF, groupByApp)
-    val countAntennaDF = computeDevicesCountBy(parseDF, groupByAntenna)
-
-    //Realizamos la carga de los DF en postgres
-    val jdbcUserFuture = writeToJdbc(countUserDF, jdbcURI, jdbcTableBytes, user, password)
-    val jdbcAppFuture = writeToJdbc(countAppDF, jdbcURI, jdbcTableBytes, user, password)
-    val jdbcAntennaFuture = writeToJdbc(countAntennaDF, jdbcURI, jdbcTableBytes, user, password)
+   spark.close()
 
 
-    Await.result(
-      Future.sequence(Seq(storageFurure,jdbcUserFuture,jdbcAppFuture,jdbcAntennaFuture)),Duration.Inf)//
-*/
-    spark.close()
-
-
-
+ }
 }

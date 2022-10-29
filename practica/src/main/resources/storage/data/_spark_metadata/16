@@ -1,2 +1,2 @@
 v1
-{"path":"file:///C:/Users/prilo/OneDrive/Desktop/KeepCoding/BootCamp/practicas/BigData-Processing/practica/src/main/resources/storage/data/year=2022/month=10/day=26/hour=17/part-00000-aa3fb8eb-980c-4733-9e8e-df59e32ef513.c000.snappy.parquet","size":2013,"isDir":false,"modificationTime":1666797100912,"blockReplication":1,"blockSize":33554432,"action":"add"}
+{"path":"file:///C:/Users/prilo/OneDrive/Desktop/KeepCoding/BootCamp/practicas/BigData-Processing/practica/src/main/resources/storage/data/year=2022/month=10/day=29/hour=13/part-00000-ee32b434-0015-4090-a3d1-d665d9d9ac0e.c000.snappy.parquet","size":1939,"isDir":false,"modificationTime":1667043002188,"blockReplication":1,"blockSize":33554432,"action":"add"}
